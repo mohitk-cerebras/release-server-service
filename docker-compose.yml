@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  release-server-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVICE_HOST=0.0.0.0
+      - SERVICE_PORT=8080
+      - LOG_LEVEL=INFO
+      - LOCAL_WORKDIR_ROOT=/tmp/release-server-service
+      - REMOTE_WORKDIR_ROOT=/n0/lab/tests
+      - DEFAULT_HEALTH_TIMEOUT_S=120
+      - DEFAULT_READINESS_TIMEOUT_S=1800
+      - DEFAULT_POLL_INTERVAL_S=5
+      - DEFAULT_PORT_DISCOVERY_TIMEOUT_S=600
+    volumes:
+      # Mount workdir for persistence across restarts
+      #       - release-workdir:/tmp/release-server-service
+      #           restart: unless-stopped
+      #
+      #           volumes:
+      #             release-workdir:
