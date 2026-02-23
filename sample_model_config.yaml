@@ -1,0 +1,144 @@
+runconfig:
+  transfer_processes: 8
+  job_priority: p2
+  job_labels:
+  - prp=oly-stream-tokens
+  - etime=2h
+  - usr=umarm
+  - zenkins_job=jenkins-miq__csx-inference-model-qual-v2__14999
+  - mode=inference
+  - juggler-id=jgtkt-yvfvlv8n917z3p9r3li55g
+  - juggler-intent=dev-test
+  - train_id=6999534c18392ecaa1432c5d
+  job_time_sec: 172800
+  model_dir: model_dir
+  num_csx: 8
+  wsc_log_level:
+    WCLT020: INFO
+    WSRV020: INFO
+    COUT036: INFO
+  disable_version_check: true
+  check_loss_values: false
+api_config:
+  workers: 10
+  logging_config:
+    version: 1
+    disable_existing_loggers: false
+    formatters:
+      default:
+        (): uvicorn.logging.DefaultFormatter
+        fmt: '%(asctime)s - %(levelprefix)s %(message)s'
+        use_colors: false
+      access:
+        (): uvicorn.logging.AccessFormatter
+        fmt: '%(asctime)s - %(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s'
+        use_colors: false
+      root:
+        (): uvicorn.logging.DefaultFormatter
+        fmt: '%(asctime)s - %(levelprefix)s [%(filename)s:%(lineno)d] %(message)s'
+        use_colors: false
+    handlers:
+      default:
+        formatter: default
+        class: logging.StreamHandler
+        stream: ext://sys.stderr
+      access:
+        formatter: access
+        class: logging.StreamHandler
+        stream: ext://sys.stdout
+      root:
+        formatter: root
+        class: logging.StreamHandler
+        stream: ext://sys.stdout
+    loggers:
+      uvicorn:
+        handlers:
+        - default
+        level: INFO
+        propagate: false
+      uvicorn.error:
+        level: INFO
+      uvicorn.access:
+        handlers:
+        - access
+        level: INFO
+        propagate: false
+      ? ''
+      : handlers:
+        - root
+        level: INFO
+replica:
+  concurrent_prompts: 10
+  tbm_timeout_cumulative_ns: 10000000000
+  health_polls:
+  - short
+  - long
+  - translate_and_feynman
+  draft_max_ahead: 20
+  max_num_gen_in_pipeline: 9
+  max_num_gen_in_queue: 1
+  idle_timeout_s: 1800
+model:
+  name: llama-3.3-70b-pc
+  hf_model_dir: /opt/cerebras/inference/models/Llama-3.3-70B-Instruct
+  cerebras_checkpoint: s3://inference-opensource/Llama-3.3-70B-Instruct/f16
+  G: 3
+  dynamic_g: true
+  D:
+    decoders: 1
+  R:
+    decoders: 10
+  S:
+    decoders: 307200
+  lanes:
+    decoders: 2
+  max_spread_x: 4
+  spread_n:
+    decoders: 16
+  float_type: f16
+  max_context: 131072
+  dedicated_waf_deembed: true
+  deembed_on_draft_box: true
+  num_csx: 8
+  structured_output:
+    vocab_type: 2
+    prepend_space_in_tokenization: false
+    constrained_decoding_library: xgrammar
+  completion_modes:
+  - CerebrasToolsMode
+  kv_cache_evict_refill: true
+  draft_model:
+    name: llama-3.3-1b-pc-draft
+    hf_model_dir: /opt/cerebras/inference/models/Llama-3.3-1b-draft-Jan21-2025
+    cerebras_checkpoint: s3://inference-opensource/Llama-3.3-1b-draft-Jan21-2025/f16
+    G: 1
+    D:
+      decoders: 1
+    R:
+      decoders: 16
+    S:
+      decoders: 307200
+    lanes:
+      decoders: 4
+    max_spread_x: 4
+    spread_n:
+      decoders: 8
+    max_context: 131072
+    float_type: f16
+    dedicated_waf_deembed: false
+    num_csx: 1
+    dedicated_waf_deembed_core: true
+    deembed_on_draft_box: true
+    min_deembed_core_width: 80
+    max_spread_y: 292
+    structured_output:
+      vocab_type: 2
+      prepend_space_in_tokenization: false
+      constrained_decoding_library: xgrammar
+    completion_modes:
+    - CerebrasToolsMode
+    kv_cache_evict_refill: true
+tokenizer:
+  tokenizer_path: /opt/cerebras/inference/models/Llama-3.3-70B-Instruct
+  chat_template_relpath: models/llama3/llama_3.3_70b.jinja
+fetch_remote_logs: false
